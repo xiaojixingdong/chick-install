@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ============================================================
-#  Chick 自动安装脚本 --1
-#  开发者：小鸡行动
+#  🐤 Chick 自动安装脚本 --1
+#  开发者：小鸡行动 (xiaojixingdong)
 #  联系邮箱：xiaojixingdong@gmail.com
 #  适用平台：Codespaces / Linux / macOS / WSL / Termux
 # ============================================================
@@ -11,60 +11,49 @@ set -euo pipefail
 # ---------- 颜色 ----------
 GREEN='\033[92m'; YELLOW='\033[93m'; CYAN='\033[96m'; RED='\033[91m'; RESET='\033[0m'
 
-# ---------- 配置路径 ----------
+# ---------- 配置 ----------
 CHICK_HOME="$HOME/.chick"
 CHICK_BIN="$CHICK_HOME/chick.sh"
 STATE_FILE="$CHICK_HOME/state"
+SCRIPT_URL="https://raw.githubusercontent.com/xiaojixingdong/chick-install/main/chick.sh"
 
-# ---------- 自安装逻辑 (核心) ----------
-install_self() {
-    # 如果当前执行路径不是 $CHICK_BIN，则进行自安装
-    if [ "$(cd "$(dirname "$0")" && pwd)/$(basename "$0")" != "$CHICK_BIN" ]; then
-        echo -e "${CYAN}>>> 正在将 Chick 脚本安装到系统...${RESET}"
-        mkdir -p "$CHICK_HOME"
-        
-        # 如果是从网络直接拉取的，需要把自己的代码存下来
-        if [ ! -f "$CHICK_BIN" ]; then
-            cp "$0" "$CHICK_BIN" 2>/dev/null || curl -fsSL "$SCRIPT_URL" -o "$CHICK_BIN"
-        fi
-        
-        chmod +x "$CHICK_BIN"
-        
-        # 注册全局命令 chick
-        if command -v sudo >/dev/null 2>&1 && [ "$(id -u)" -ne 0 ]; then
-            sudo ln -sf "$CHICK_BIN" /usr/local/bin/chick
-        else
-            mkdir -p "$HOME/.local/bin"
-            ln -sf "$CHICK_BIN" "$HOME/.local/bin/chick"
-            # 确保 PATH 包含 ~/.local/bin
-            if ! grep -q 'export PATH="$HOME/.local/bin:$PATH"' "$HOME/.bashrc" 2>/dev/null; then
-                echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
-            fi
-            export PATH="$HOME/.local/bin:$PATH"
-        fi
-        
-        echo -e "${GREEN}✅ 安装成功！以后只需在终端输入 ${YELLOW}chick${GREEN} 即可召唤本菜单。${RESET}"
-        sleep 1.5
-    fi
-}
+# 可选软件列表
+APP_LIST=(
+    "Google Chrome"
+    "Firefox"
+    "微信"
+    "QQ"
+    "Android Studio"
+    "VS Code Server"
+    "Docker"
+    "Node.js"
+    "Python"
+    "中文输入法 (Fcitx5)"
+)
 
-# 确保目录和状态文件存在
+# 初始化状态目录
 mkdir -p "$CHICK_HOME"
 [ -f "$STATE_FILE" ] || echo "desktop=false" > "$STATE_FILE"
 
-# ---------- 读取状态 ----------
-is_desktop_installed() { grep -q "^desktop=true" "$STATE_FILE" 2>/dev/null; }
-set_desktop_installed() { sed -i 's/^desktop=.*/desktop=true/' "$STATE_FILE"; }
-
-# ---------- 检测系统 ----------
+# ---------- 系统检测 ----------
 detect_os() {
-    if [ -n "${TERMUX_VERSION:-}" ] || [[ "${PREFIX:-}" == *"com.termux"* ]]; then echo "termux"
-    elif [ "$(uname -s)" = "Darwin" ]; then echo "macos"
-    elif [ -n "${CODESPACES:-}" ]; then echo "codespaces"
-    elif grep -qi microsoft /proc/version 2>/dev/null; then echo "wsl"
-    else echo "linux"; fi
+    if [ -n "${TERMUX_VERSION:-}" ] || [[ "${PREFIX:-}" == *"com.termux"* ]]; then
+        echo "termux"
+    elif [ "$(uname -s)" = "Darwin" ]; then
+        echo "macos"
+    elif [ -n "${CODESPACES:-}" ]; then
+        echo "codespaces"
+    elif grep -qi microsoft /proc/version 2>/dev/null; then
+        echo "wsl"
+    else
+        echo "linux"
+    fi
 }
 OS_TYPE=$(detect_os)
+
+# ---------- 状态管理 ----------
+is_desktop_installed() { grep -q "^desktop=true" "$STATE_FILE" 2>/dev/null; }
+set_desktop_installed() { sed -i 's/^desktop=.*/desktop=true/' "$STATE_FILE"; }
 
 # ---------- 安装 gum (精美菜单依赖) ----------
 install_gum() {
@@ -85,19 +74,84 @@ install_gum() {
 # ---------- 小鸡 Banner ----------
 show_banner() {
     clear 2>/dev/null || true
-    gum style \
-        --foreground 208 --border-foreground 208 --border rounded \
-        --align center --width 50 --margin "1 2" --padding "1 2" \
-        "🐤 Chick 自动安装脚本 --1" \
-        "开发者：小鸡行动" \
-        "xiaojixingdong@gmail.com"
+    echo -e "${YELLOW}"
+    cat << "EOF"
+   ██████╗██╗  ██╗██╗ ██████╗██╗  ██╗
+  ██╔════╝██║  ██║██║██╔════╝██║ ██╔╝
+  ██║     ███████║██║██║     █████╔╝ 
+  ██║     ██╔══██║██║██║     ██╔═██╗ 
+  ╚██████╗██║  ██║██║╚██████╗██║  ██╗
+   ╚═════╝╚═╝  ╚═╝╚═╝ ╚═════╝╚═╝  ╚═╝
+EOF
+    echo -e "${RESET}"
+    echo -e "${CYAN}   ╭──────────────────────────────╮${RESET}"
+    echo -e "${CYAN}   │${YELLOW}      🐤  你好呀！我是Chick    ${CYAN}│${RESET}"
+    echo -e "${CYAN}   │${YELLOW}     你的云端桌面小助手        ${CYAN}│${RESET}"
+    echo -e "${CYAN}   ╰──────────────────────────────╯${RESET}"
     echo ""
+    echo -e "${GREEN}──────────────────────────────────────────${RESET}"
+    echo -e "  ${CYAN}开发者：${RESET}小鸡行动"
+    echo -e "  ${CYAN}联系邮箱：${RESET}xiaojixingdong@gmail.com"
     echo -e "  ${YELLOW}欢迎发送你的联系方式，有机会必回信与你共讨${RESET}"
+    echo -e "${GREEN}──────────────────────────────────────────${RESET}"
     echo ""
 }
 
+# ---------- 自安装逻辑 (核心修复) ----------
+install_self() {
+    # 如果当前运行的就是全局命令本身，直接跳过
+    if [ "$(cd "$(dirname "$0")" && pwd)/$(basename "$0")" = "$CHICK_BIN" ]; then
+        return
+    fi
+
+    echo -e "${CYAN}>>> 正在将 Chick 脚本安装到系统...${RESET}"
+    mkdir -p "$CHICK_HOME"
+    
+    # 核心修复：抛弃 cp $0，直接从远程仓库拉取完整的自身
+    curl -fsSL "$SCRIPT_URL" -o "$CHICK_BIN"
+    chmod +x "$CHICK_BIN"
+    
+    # 注册全局命令 chick
+    if command -v sudo >/dev/null 2>&1 && [ "$(id -u)" -ne 0 ]; then
+        sudo ln -sf "$CHICK_BIN" /usr/local/bin/chick
+    else
+        mkdir -p "$HOME/.local/bin"
+        ln -sf "$CHICK_BIN" "$HOME/.local/bin/chick"
+        if ! grep -q 'export PATH="$HOME/.local/bin:$PATH"' "$HOME/.bashrc" 2>/dev/null; then
+            echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
+        fi
+        export PATH="$HOME/.local/bin:$PATH"
+    fi
+    
+    echo -e "${GREEN}✅ 安装成功！以后只需在终端输入 ${YELLOW}chick${GREEN} 即可召唤本菜单。${RESET}"
+    sleep 1.5
+}
+
+# ---------- 检查依赖 ----------
+check_dependencies() {
+    local missing=()
+    for cmd in git curl wget; do
+        if ! command -v "$cmd" >/dev/null 2>&1; then
+            missing+=("$cmd")
+        fi
+    done
+    if [ ${#missing[@]} -gt 0 ]; then
+        echo -e "${YELLOW}>>> 正在安装必要依赖：${missing[*]}...${RESET}"
+        case "$OS_TYPE" in
+            termux) pkg install -y "${missing[@]}" ;;
+            macos)  brew install "${missing[@]}" 2>/dev/null || true ;;
+            *)      sudo apt update -qq && sudo apt install -y "${missing[@]}" ;;
+        esac
+    fi
+}
+
+# ============================================================
+#  功能模块
+# ============================================================
+
 # ---------- 安装桌面环境 ----------
 install_desktop() {
+    echo ""
     gum spin --spinner dot --title "正在安装 XFCE 桌面 + VNC (可能需要几分钟)..." -- bash -c "
         sudo apt update -qq
         sudo apt install -y tigervnc-standalone-server xfce4 xfce4-goodies websockify dbus-x11 fonts-noto-cjk
@@ -129,18 +183,9 @@ stop_desktop() {
 install_software() {
     local selected
     selected=$(gum choose --no-limit --height 15 \
-        --header "选择要安装的软件（空格选择，回车确认）" \
+        --header "🐤 选择要安装的软件 (空格选择，回车确认)" \
         --cursor "🐤 " \
-        "Google Chrome" \
-        "Firefox" \
-        "微信" \
-        "QQ" \
-        "Android Studio" \
-        "VS Code Server" \
-        "Docker" \
-        "Node.js" \
-        "Python" \
-        "中文输入法 (Fcitx5)")
+        "${APP_LIST[@]}")
 
     [ -z "$selected" ] && return
 
@@ -213,10 +258,10 @@ install_ime() { gum spin --title "安装中文输入法..." -- sudo apt install 
 
 # ---------- 主菜单 ----------
 main_menu() {
-    show_banner
-    install_gum
-
     while true; do
+        show_banner
+        install_gum
+
         local desktop_status="未安装"
         is_desktop_installed && desktop_status="已安装 ✅"
 
@@ -258,10 +303,10 @@ main_menu() {
 
         echo ""
         gum confirm "返回主菜单？" || exit 0
-        show_banner
     done
 }
 
 # ---------- 启动流程 ----------
+check_dependencies
 install_self
 main_menu
