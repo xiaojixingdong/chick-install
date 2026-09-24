@@ -8,7 +8,6 @@
 
 # ---------- 颜色与样式 ----------
 GREEN='\033[92m'; YELLOW='\033[93m'; CYAN='\033[96m'; RED='\033[91m'; RESET='\033[0m'
-BOLD='\033[1m'
 
 # ---------- 配置与路径 ----------
 CHICK_HOME="$HOME/.chick"
@@ -16,72 +15,43 @@ CHICK_BIN="$CHICK_HOME/chick.sh"
 STATE_FILE="$CHICK_HOME/state"
 SCRIPT_URL="https://raw.githubusercontent.com/xiaojixingdong/chick-install/main/chick.sh"
 
-# 软件超市列表（支持空格多选）
-APP_LIST=(
-    "Google Chrome"
-    "Firefox"
-    "微信"
-    "QQ"
-    "Android Studio"
-    "VS Code Server"
-    "Docker"
-    "Node.js"
-    "Python"
-    "中文输入法 (Fcitx5)"
-    "系统监控 (btop)"
-    "网速监控 (nload)"
-    "流量监控 (iftop)"
-)
-
-# 初始化状态
 mkdir -p "$CHICK_HOME"
 [ -f "$STATE_FILE" ] || echo "desktop=false" > "$STATE_FILE"
 
-# ============================================================
-#  基础检测模块
-# ============================================================
-detect_os() {
-    if [ -n "${TERMUX_VERSION:-}" ] || [[ "${PREFIX:-}" == *"com.termux"* ]]; then
-        echo "termux"
-    elif [ "$(uname -s)" = "Darwin" ]; then
-        echo "macos"
-    elif [ -n "${CODESPACES:-}" ]; then
-        echo "codespaces"
-    elif grep -qi microsoft /proc/version 2>/dev/null; then
-        echo "wsl"
-    else
-        echo "linux"
-    fi
-}
-OS_TYPE=$(detect_os)
-
+# ---------- 状态检测 ----------
 is_desktop_installed() { grep -q "^desktop=true" "$STATE_FILE" 2>/dev/null; }
 set_desktop_installed() { sed -i 's/^desktop=.*/desktop=true/' "$STATE_FILE"; }
 
-# 核心修复：自安装与全局命令注册
+# ---------- 系统检测 ----------
+detect_os() {
+    if [ -n "${TERMUX_VERSION:-}" ] || [[ "${PREFIX:-}" == *"com.termux"* ]]; then echo "termux"
+    elif [ "$(uname -s)" = "Darwin" ]; then echo "macos"
+    elif [ -n "${CODESPACES:-}" ]; then echo "codespaces"
+    elif grep -qi microsoft /proc/version 2>/dev/null; then echo "wsl"
+    else echo "linux"; fi
+}
+OS_TYPE=$(detect_os)
+
+# ---------- 自安装与全局命令 ----------
 install_self() {
     if [ "$(cd "$(dirname "$0")" && pwd)/$(basename "$0")" = "$CHICK_BIN" ]; then return; fi
     echo -e "${CYAN}>>> 正在将 Chick 脚本安装到系统...${RESET}"
     mkdir -p "$CHICK_HOME"
-    # 直接从远程仓库拉取完整的自己，防止复制临时文件导致空文件
     curl -fsSL "$SCRIPT_URL" -o "$CHICK_BIN"
     chmod +x "$CHICK_BIN"
-    
     if command -v sudo >/dev/null 2>&1 && [ "$(id -u)" -ne 0 ]; then
         sudo ln -sf "$CHICK_BIN" /usr/local/bin/chick
     else
         mkdir -p "$HOME/.local/bin"
         ln -sf "$CHICK_BIN" "$HOME/.local/bin/chick"
-        if ! grep -q 'export PATH="$HOME/.local/bin:$PATH"' "$HOME/.bashrc" 2>/dev/null; then
-            echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
-        fi
+        echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
         export PATH="$HOME/.local/bin:$PATH"
     fi
     echo -e "${GREEN}✅ 安装成功！以后只需在终端输入 ${YELLOW}chick${GREEN} 即可召唤本菜单。${RESET}"
     sleep 1.5
 }
 
-# 检查并安装依赖
+# 检查依赖
 check_dependencies() {
     local missing=()
     for cmd in git curl wget; do
@@ -89,33 +59,11 @@ check_dependencies() {
     done
     if [ ${#missing[@]} -gt 0 ]; then
         echo -e "${YELLOW}>>> 正在补齐必要依赖：${missing[*]}...${RESET}"
-        case "$OS_TYPE" in
-            termux) pkg install -y "${missing[@]}" ;;
-            macos)  brew install "${missing[@]}" 2>/dev/null || true ;;
-            *)      sudo apt update -qq && sudo apt install -y "${missing[@]}" ;;
-        esac
+        sudo apt update -qq && sudo apt install -y "${missing[@]}"
     fi
 }
 
-# 安装 gum 精美菜单组件
-install_gum() {
-    if command -v gum &>/dev/null; then return; fi
-    echo -e "${CYAN}>>> 首次运行，正在安装界面美化组件 gum...${RESET}"
-    if [ "$OS_TYPE" = "termux" ]; then
-        pkg install -y gum
-    elif [ "$OS_TYPE" = "macos" ]; then
-        brew install gum 2>/dev/null || true
-    else
-        sudo mkdir -p /etc/apt/keyrings
-        curl -fsSL https://repo.charm.sh/apt/gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/charm.gpg
-        echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | sudo tee /etc/apt/sources.list.d/charm.list > /dev/null
-        sudo apt update -qq && sudo apt install -y gum
-    fi
-}
-
-# ============================================================
-#  视觉与进度条模块
-# ============================================================
+# ---------- 大字 Banner ----------
 show_banner() {
     clear 2>/dev/null || true
     echo -e "${YELLOW}"
@@ -141,58 +89,45 @@ EOF
     echo ""
 }
 
-# 自定义进度下载器（显示百分比、速度、已下载大小、剩余时间）
-download_with_progress() {
-    local url="$1" output="$2" filename="$3"
-    echo -e "${CYAN}>>> 正在下载 $filename...${RESET}"
-    # 使用 wget 原生进度条，能完美显示速度、已下载大小、剩余时间
-    wget --show-progress -q --progress=bar:force -O "$output" "$url" 2>&1 | \
-    while IFS= read -r -d $'\r' line; do
-        echo -ne "\r  🐤 $filename: $line"
-    done
-    echo ""
-}
-
 # ============================================================
-#  核心功能：桌面环境
+#  核心功能模块
 # ============================================================
 install_desktop() {
     echo ""
-    echo -e "${CYAN}═══════════════════════════════════════${RESET}"
-    echo -e "${CYAN}  🖥️  安装 XFCE 桌面 + VNC${RESET}"
-    echo -e "${CYAN}═══════════════════════════════════════${RESET}"
-    
-    if [ "$OS_TYPE" = "termux" ]; then
-        pkg update -y && pkg install -y x11-repo tigervnc xfce4 xfce4-goodies
-        set_desktop_installed
-        echo -e "${GREEN}✅ Termux 桌面环境安装完成！请使用 VNC Viewer 连接 localhost:5901${RESET}"
-        return
-    fi
-
-    echo -e "${YELLOW}[1/3] 更新软件源...${RESET}"
+    echo -e "${CYAN}>>> 开始安装 XFCE 桌面 + VNC，请耐心等待进度条...${RESET}"
     sudo apt update
-
-    echo -e "${YELLOW}[2/3] 安装桌面环境 (文件较多，请观看真实进度条)...${RESET}"
     sudo apt install -y tigervnc-standalone-server xfce4 xfce4-goodies websockify dbus-x11 fonts-noto-cjk
-
-    echo -e "${YELLOW}[3/3] 克隆 noVNC...${RESET}"
     [ ! -d "$HOME/noVNC" ] && git clone --progress https://github.com/novnc/noVNC.git "$HOME/noVNC"
-
     set_desktop_installed
     echo -e "${GREEN}✅ 桌面环境安装完成！${RESET}"
-    echo -e "${YELLOW}>>> 温馨提醒：不用时记得停止 Codespaces，以免额度被扣光。${RESET}"
 }
 
 start_desktop() {
     echo ""
-    echo -e "${CYAN}>>> 正在启动 VNC 服务器...${RESET}"
-    vncserver -kill :1 2>/dev/null || true
-    rm -f /tmp/.X1-lock /tmp/.X11-unix/X1 2>/dev/null || true
-    vncserver -SecurityType none -xstartup "xfce4-session" :1 -geometry 1280x720 -depth 24
+    echo -e "${CYAN}>>> 正在启动 VNC...${RESET}"
+    vncserver -kill :1 >/dev/null 2>&1 || true
+    pkill -f novnc_proxy >/dev/null 2>&1 || true
+    rm -f /tmp/.X1-lock /tmp/.X11-unix/X1 >/dev/null 2>&1 || true
+    
+    vncserver -SecurityType none -xstartup "xfce4-session" :1 -geometry 1280x720 -depth 24 >/dev/null 2>&1
+    if ! pgrep -f "Xtigervnc :1" >/dev/null; then
+        echo -e "${RED}❌ VNC 启动失败，请先安装桌面环境。${RESET}"
+        return
+    fi
+
     cd "$HOME/noVNC"
-    ./utils/novnc_proxy --vnc localhost:5901 --listen 6080 &
+    ./utils/novnc_proxy --vnc localhost:5901 --listen 6080 >/dev/null 2>&1 &
+    sleep 2
     cd - > /dev/null
-    echo -e "${GREEN}✅ 桌面已启动！在 Codespaces 的 Ports 标签页打开 6080 端口即可访问。${RESET}"
+
+    if ! pgrep -f "novnc_proxy" >/dev/null; then
+        echo -e "${RED}❌ noVNC 代理启动失败！${RESET}"
+        return
+    fi
+
+    echo -e "${GREEN}✅ 桌面已启动！${RESET}"
+    echo -e "${YELLOW}👉 在底部「端口 / Ports」里找到 6080，把可见性改成「公开 / Public」。${RESET}"
+    echo -e "${YELLOW}👉 然后点旁边的🌍地球图标，就能在手机上打开了！${RESET}"
 }
 
 stop_desktop() {
@@ -204,153 +139,153 @@ stop_desktop() {
 }
 
 # ============================================================
-#  软件超市（支持选择性安装）
+#  🍔 软件超市（纯数字选择，手机绝对能用！）
 # ============================================================
 install_software() {
-    local selected
-    selected=$(gum choose --no-limit --height 15 \
-        --header "🐤 选择要安装的软件 (空格键选择，回车键确认)" \
-        --cursor "🐤 " \
-        "${APP_LIST[@]}")
+    echo ""
+    echo -e "${CYAN}═══════════════════════════════════════${RESET}"
+    echo -e "${CYAN}  🧩 软件超市（输入数字，按回车确认）${RESET}"
+    echo -e "${CYAN}═══════════════════════════════════════${RESET}"
+    echo -e "  ${YELLOW}1)${RESET} Google Chrome"
+    echo -e "  ${YELLOW}2)${RESET} Firefox"
+    echo -e "  ${YELLOW}3)${RESET} 微信 (deepin-wine)"
+    echo -e "  ${YELLOW}4)${RESET} QQ (deepin-wine)"
+    echo -e "  ${YELLOW}5)${RESET} Android Studio"
+    echo -e "  ${YELLOW}6)${RESET} VS Code Server"
+    echo -e "  ${YELLOW}7)${RESET} Docker"
+    echo -e "  ${YELLOW}8)${RESET} Node.js"
+    echo -e "  ${YELLOW}9)${RESET} Python"
+    echo -e "  ${YELLOW}10)${RESET} 中文输入法"
+    echo -e "  ${YELLOW}11)${RESET} 系统监控 (btop)"
+    echo -e "  ${YELLOW}12)${RESET} 网速监控 (nload)"
+    echo -e "  ${YELLOW}13)${RESET} 流量监控 (iftop)"
+    echo ""
+    printf "  ${YELLOW}👉 请输入数字（可多选，用空格隔开，例如 1 3 5），然后按回车：${RESET}"
+    read -r choices
 
-    [ -z "$selected" ] && return
+    [ -z "$choices" ] && return
 
-    while IFS= read -r app; do
-        case "$app" in
-            "Google Chrome") install_chrome ;;
-            "Firefox") install_firefox ;;
-            "微信") install_wechat ;;
-            "QQ") install_qq ;;
-            "Android Studio") install_android_studio ;;
-            "VS Code Server") install_vscode_server ;;
-            "Docker") install_docker ;;
-            "Node.js") install_nodejs ;;
-            "Python") install_python ;;
-            "中文输入法 (Fcitx5)") install_ime ;;
-            "系统监控 (btop)") install_btop ;;
-            "网速监控 (nload)") install_nload ;;
-            "流量监控 (iftop)") install_iftop ;;
+    for choice in $choices; do
+        case "$choice" in
+            1) install_chrome ;;
+            2) install_firefox ;;
+            3) install_wechat ;;
+            4) install_qq ;;
+            5) install_android_studio ;;
+            6) install_vscode_server ;;
+            7) install_docker ;;
+            8) install_nodejs ;;
+            9) install_python ;;
+            10) install_ime ;;
+            11) install_btop ;;
+            12) install_nload ;;
+            13) install_iftop ;;
+            *) echo -e "${RED}>>> 无效数字：$choice，已跳过。${RESET}" ;;
         esac
-    done <<< "$selected"
-
-    echo -e "${GREEN}✅ 所选软件安装完成！${RESET}"
+    done
+    echo -e "${GREEN}✅ 软件安装流程结束！${RESET}"
 }
 
-install_chrome() {
-    echo -e "${CYAN}>>> 安装 Chrome...${RESET}"
-    mkdir -p ~/setup-chrome && cd ~/setup-chrome
-    download_with_progress "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb" "chrome.deb" "Chrome"
-    sudo apt install -y ./chrome.deb
-    cd ~
+# 下载器（保留原生进度条）
+download_with_progress() {
+    local url="$1" output="$2" filename="$3"
+    echo -e "${CYAN}>>> 正在下载 $filename...${RESET}"
+    wget --show-progress -q --progress=bar:force -O "$output" "$url" 2>&1 | while IFS= read -r -d $'\r' line; do echo -ne "\r  🐤 $filename: $line"; done
+    echo ""
 }
+
+# 具体安装函数
+install_chrome() { echo -e "${CYAN}>>> 安装 Chrome...${RESET}"; mkdir -p ~/setup-chrome && cd ~/setup-chrome; download_with_progress "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb" "chrome.deb" "Chrome"; sudo apt install -y ./chrome.deb; cd ~; }
 install_firefox() { echo -e "${CYAN}>>> 安装 Firefox...${RESET}"; sudo apt install -y firefox; }
-install_wechat() {
-    echo -e "${CYAN}>>> 安装微信 (deepin-wine)...${RESET}"
-    wget -O- https://deepin-wine.i-m.dev/setup.sh | sh
-    sudo apt-get install -y com.qq.weixin.deepin
-}
-install_qq() {
-    echo -e "${CYAN}>>> 安装 QQ (deepin-wine)...${RESET}"
-    wget -O- https://deepin-wine.i-m.dev/setup.sh | sh
-    sudo apt-get install -y com.qq.im.deepin
-}
-install_android_studio() {
-    echo -e "${CYAN}>>> 安装 Android Studio (文件较大，请观看进度条)...${RESET}"
-    sudo apt install -y openjdk-17-jdk
-    mkdir -p ~/android-studio && cd ~/android-studio
-    download_with_progress "https://redirector.gvt1.com/edgedl/android/studio/ide-zips/2024.1.1.11/android-studio-2024.1.1.11-linux.tar.gz" "as.tar.gz" "Android Studio"
-    tar -xzf as.tar.gz
-    echo "export PATH=\$PATH:\$HOME/android-studio/android-studio/bin" >> ~/.bashrc
-    cd ~
-}
+install_wechat() { echo -e "${CYAN}>>> 安装微信...${RESET}"; wget -O- https://deepin-wine.i-m.dev/setup.sh | sh; sudo apt-get install -y com.qq.weixin.deepin; }
+install_qq() { echo -e "${CYAN}>>> 安装 QQ...${RESET}"; wget -O- https://deepin-wine.i-m.dev/setup.sh | sh; sudo apt-get install -y com.qq.im.deepin; }
+install_android_studio() { echo -e "${CYAN}>>> 安装 Android Studio (大文件，看进度条)...${RESET}"; sudo apt install -y openjdk-17-jdk; mkdir -p ~/android-studio && cd ~/android-studio; download_with_progress "https://redirector.gvt1.com/edgedl/android/studio/ide-zips/2024.1.1.11/android-studio-2024.1.1.11-linux.tar.gz" "as.tar.gz" "Android Studio"; tar -xzf as.tar.gz; echo "export PATH=\$PATH:\$HOME/android-studio/android-studio/bin" >> ~/.bashrc; cd ~; }
 install_vscode_server() { echo -e "${CYAN}>>> 安装 VS Code Server...${RESET}"; wget -qO- https://aka.ms/install-vscode-server/setup.sh | sh; }
 install_docker() { echo -e "${CYAN}>>> 安装 Docker...${RESET}"; sudo apt install -y docker.io docker-compose; sudo systemctl enable docker 2>/dev/null || true; }
 install_nodejs() { echo -e "${CYAN}>>> 安装 Node.js...${RESET}"; curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -; sudo apt install -y nodejs; }
 install_python() { echo -e "${CYAN}>>> 安装 Python...${RESET}"; sudo apt install -y python3 python3-pip python3-venv; }
 install_ime() { echo -e "${CYAN}>>> 安装中文输入法...${RESET}"; sudo apt install -y fcitx5 fcitx5-chinese-addons; }
-install_btop() { echo -e "${CYAN}>>> 安装系统监控 btop...${RESET}"; sudo apt install -y btop; }
-install_nload() { echo -e "${CYAN}>>> 安装网速监控 nload...${RESET}"; sudo apt install -y nload; }
-install_iftop() { echo -e "${CYAN}>>> 安装流量监控 iftop...${RESET}"; sudo apt install -y iftop; }
+install_btop() { echo -e "${CYAN}>>> 安装 btop...${RESET}"; sudo apt install -y btop; }
+install_nload() { echo -e "${CYAN}>>> 安装 nload...${RESET}"; sudo apt install -y nload; }
+install_iftop() { echo -e "${CYAN}>>> 安装 iftop...${RESET}"; sudo apt install -y iftop; }
 
 # ============================================================
-#  系统监控中心
+#  📊 系统监控中心（纯数字选择）
 # ============================================================
 system_monitor_menu() {
-    local choice
-    choice=$(gum choose --header "🐤 系统监控中心" \
-        --cursor "🐤 " \
-        "📊 打开 btop (CPU/内存/网络/GPU)" \
-        "🌐 打开 nload (实时网速)" \
-        "📡 打开 iftop (连接级流量)" \
-        "↩️ 返回主菜单")
+    echo ""
+    echo -e "${CYAN}═══════════════════════════════════════${RESET}"
+    echo -e "${CYAN}  📊 系统监控中心（输入数字，按回车）${RESET}"
+    echo -e "${CYAN}═══════════════════════════════════════${RESET}"
+    echo -e "  ${YELLOW}1)${RESET} 打开 btop (CPU/内存/网络)"
+    echo -e "  ${YELLOW}2)${RESET} 打开 nload (实时网速)"
+    echo -e "  ${YELLOW}3)${RESET} 打开 iftop (连接流量)"
+    echo -e "  ${YELLOW}4)${RESET} 返回主菜单"
+    echo ""
+    printf "  ${YELLOW}👉 请输入数字，按回车：${RESET}"
+    read -r choice
 
     case "$choice" in
-        "📊 打开 btop (CPU/内存/网络/GPU)")
-            command -v btop >/dev/null || install_btop
-            btop
-            ;;
-        "🌐 打开 nload (实时网速)")
-            command -v nload >/dev/null || install_nload
-            nload
-            ;;
-        "📡 打开 iftop (连接级流量)")
-            command -v iftop >/dev/null || install_iftop
-            sudo iftop
-            ;;
+        1) command -v btop >/dev/null || install_btop; btop ;;
+        2) command -v nload >/dev/null || install_nload; nload ;;
+        3) command -v iftop >/dev/null || install_iftop; sudo iftop ;;
+        4) return ;;
+        *) echo -e "${RED}>>> 无效选择，已跳过。${RESET}" ;;
     esac
 }
 
 # ============================================================
-#  主菜单与启动流程
+#  🐤 主菜单（纯数字选择，最适合手机！）
 # ============================================================
 main_menu() {
     while true; do
         show_banner
-        install_gum
-
+        
         local desktop_status="未安装"
         is_desktop_installed && desktop_status="已安装 ✅"
 
-        local options=()
+        echo -e "${CYAN}═══════════════════════════════════════${RESET}"
+        echo -e "${CYAN}  🐤 Chick 主菜单 | 桌面状态: $desktop_status${RESET}"
+        echo -e "${CYAN}═══════════════════════════════════════${RESET}"
+        
         if is_desktop_installed; then
-            options+=("▶️ 启动桌面")
-            options+=("⏹️ 停止桌面")
+            echo -e "  ${YELLOW}1)${RESET} ▶️ 启动桌面"
+            echo -e "  ${YELLOW}2)${RESET} ⏹️ 停止桌面"
         else
-            options+=("📦 安装桌面环境")
+            echo -e "  ${YELLOW}1)${RESET} 📦 安装桌面环境"
         fi
-        options+=("🧩 安装软件")
-        options+=("📊 系统监控中心")
-        options+=("ℹ️ 状态信息")
-        options+=("🚪 退出")
+        echo -e "  ${YELLOW}3)${RESET} 🧩 安装软件"
+        echo -e "  ${YELLOW}4)${RESET} 📊 系统监控中心"
+        echo -e "  ${YELLOW}5)${RESET} ℹ️ 状态信息"
+        echo -e "  ${YELLOW}6)${RESET} 🚪 退出"
+        echo ""
+        printf "  ${YELLOW}👉 请输入数字（按回车确认）：${RESET}"
+        read -r choice
 
-        local choice
-        choice=$(gum choose \
-            --header "🐤 Chick 菜单 | 桌面状态: $desktop_status" \
-            --cursor "🐤 " \
-            --height 10 \
-            "${options[@]}")
-
-        case "$choice" in
-            "📦 安装桌面环境") install_desktop ;;
-            "▶️ 启动桌面") start_desktop ;;
-            "⏹️ 停止桌面") stop_desktop ;;
-            "🧩 安装软件") install_software ;;
-            "📊 系统监控中心") system_monitor_menu ;;
-            "ℹ️ 状态信息")
-                gum style \
-                    --border rounded --padding "1 2" \
-                    "平台: $OS_TYPE" \
-                    "桌面环境: $(is_desktop_installed && echo '已安装' || echo '未安装')" \
-                    "联系邮箱: xiaojixingdong@gmail.com"
-                ;;
-            "🚪 退出")
-                echo -e "${GREEN}感谢使用 Chick 脚本！再见 🐤${RESET}"
-                exit 0
-                ;;
-        esac
+        if is_desktop_installed; then
+            case "$choice" in
+                1) start_desktop ;;
+                2) stop_desktop ;;
+                3) install_software ;;
+                4) system_monitor_menu ;;
+                5) echo -e "${CYAN}平台: $OS_TYPE | 桌面: 已安装${RESET}" ;;
+                6) echo -e "${GREEN}感谢使用 Chick 脚本！再见 🐤${RESET}"; exit 0 ;;
+                *) echo -e "${RED}>>> 无效数字，请重新输入。${RESET}" ;;
+            esac
+        else
+            case "$choice" in
+                1) install_desktop ;;
+                3) install_software ;;
+                4) system_monitor_menu ;;
+                5) echo -e "${CYAN}平台: $OS_TYPE | 桌面: 未安装${RESET}" ;;
+                6) echo -e "${GREEN}感谢使用 Chick 脚本！再见 🐤${RESET}"; exit 0 ;;
+                *) echo -e "${RED}>>> 无效数字，请重新输入。${RESET}" ;;
+            esac
+        fi
 
         echo ""
-        gum confirm "返回主菜单？" || exit 0
+        printf "  ${CYAN}按回车键返回主菜单...${RESET}"
+        read -r
     done
 }
 
