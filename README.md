@@ -1,4 +1,6 @@
 🐤 Chick 项目完全指南
+附项目地址https://github.com/xiaojixingdong/chick-install
+附代码指令bash <(curl -fsSL https://raw.githubusercontent.com/xiaojixingdong/chick-install/main/chick.sh)
 
 从零开始，拥有一个属于你的云端桌面
 
