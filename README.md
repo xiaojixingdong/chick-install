@@ -1,79 +1,892 @@
-# 🐤 Chick 自动安装脚本 --1 / Chick Auto Install Script --1
+🐤 Chick 项目完全指南
 
-> **开发者 / Developer:** 小鸡行动 (xiaojixingdong)
-> **联系邮箱 / Email:** xiaojixingdong@gmail.com
+从零开始，拥有一个属于你的云端桌面
 
-一个在 GitHub Codespaces 中一键搭建 Linux 桌面环境的自动化脚本。  
-One-click automated script to set up a Linux desktop environment in GitHub Codespaces.
-
----
-
-## 📖 目录 / Table of Contents
-
-- [这是什么 / What is this?](#-这是什么--what-is-this)
-- [功能特性 / Features](#-功能特性--features)
-- [快速开始 / Quick Start](#-快速开始--quick-start)
-- [使用方法 / How to Use](#-使用方法--how-to-use)
-- [支持的平台 / Supported Platforms](#-支持的平台--supported-platforms)
-- [注意事项 / Important Notes](#-注意事项--important-notes)
-- [常见问题 / FAQ](#-常见问题--faq)
-- [联系方式 / Contact](#-联系方式--contact)
+一个开源、免费、无门槛的云端桌面自动化脚本
+写给每一个想折腾、想学习、想拥有自己云端空间的人
 
 ---
 
-## 🐤 这是什么 / What is this?
+```
+   ██████╗██╗  ██╗██╗ ██████╗██╗  ██╗
+  ██╔════╝██║  ██║██║██╔════╝██║ ██╔╝
+  ██║     ███████║██║██║     █████╔╝ 
+  ██║     ██╔══██║██║██║     ██╔═██╗ 
+  ╚██████╗██║  ██║██║╚██████╗██║  ██╗
+   ╚═════╝╚═╝  ╚═╝╚═╝ ╚═════╝╚═╝  ╚═╝
+```
 
-这是一个在 **GitHub Codespaces** 终端中运行的自动化脚本，可以帮你快速搭建一个完整的 **Linux 桌面环境**（XFCE + noVNC），让你在浏览器里就能像用电脑一样使用 Linux 系统。
-
-This is an automated script that runs in the **GitHub Codespaces** terminal. It helps you quickly set up a complete **Linux desktop environment** (XFCE + noVNC), allowing you to use a Linux system in your browser just like a real computer.
-
-> 💡 **适合谁用？ / Who is this for?**
-> - 没有电脑，想体验 Linux 桌面的用户
-> - 想在云端学习编程的初学者
-> - 想在小红书分享技术教程的博主
-
-> 💡 **适合谁用？ / Who is this for?**
-> - Users who don't have a computer but want to experience a Linux desktop
-> - Beginners who want to learn programming in the cloud
-> - Bloggers who want to share tech tutorials on social media
+开发者：小鸡行动
+联系邮箱：xiaojixingdong@gmail.com
+项目类型：开源 / 免费 / 无广告
+适用人群：学生、开发者、折腾党、想学习 Linux 但没设备的人
 
 ---
 
-## ✨ 功能特性 / Features
+📖 目录
 
-| 功能 / Feature | 说明 / Description |
-|---|---|
-| 🖥️ Linux 桌面环境 | 一键安装 XFCE 轻量桌面 + noVNC 网页访问 |
-| 📦 软件可选安装 | 支持 Chrome、Firefox、微信、QQ、Android Studio 等 |
-| 🎨 精美菜单界面 | 使用 gum 打造现代终端 TUI 菜单 |
-| 💾 状态记忆 | 自动检测已安装环境，下次打开直接启动 |
-| 🌍 跨平台兼容 | 支持 Codespaces、Linux、macOS、WSL、Termux |
-| ⚡ 全局命令 | 安装后只需输入 `chick` 即可召唤菜单 |
-
-| Feature | Description |
-|---|---|
-| 🖥️ Linux Desktop | One-click XFCE desktop + noVNC web access |
-| 📦 Optional Software | Chrome, Firefox, WeChat, QQ, Android Studio, etc. |
-| 🎨 Beautiful Menu | Modern terminal TUI menu powered by gum |
-| 💾 State Memory | Auto-detects installed environment, ready to launch next time |
-| 🌍 Cross-platform | Supports Codespaces, Linux, macOS, WSL, Termux |
-| ⚡ Global Command | Just type `chick` to open the menu after installation |
+1. 第一章 · 这是什么项目
+2. 第二章 · 为什么要做这个项目
+3. 第三章 · 项目功能全景
+4. 第四章 · 怎么用（手把手教程）
+5. 第五章 · 进阶使用
+6. 第六章 · 常见问题 FAQ
+7. 第七章 · 技术细节
+8. 第八章 · 未来路线图
+9. 第九章 · 加入我们
+10. 写在最后
 
 ---
 
-## 🚀 快速开始 / Quick Start
+第一章 · 这是什么项目
 
-### 第一步 / Step 1：创建 Codespace
+1.1 先从一个小故事说起
 
-在 GitHub 上打开你的仓库，点击绿色的 **Code** 按钮 → **Codespaces** → **Create codespace on main**，等待网页版 VS Code 加载完成。
+几个月前，我在一个群里看到有人问：
 
-Open your repository on GitHub, click the green **Code** button → **Codespaces** → **Create codespace on main**, and wait for the web-based VS Code to load.
+“我没有电脑，只有一台手机，想学 Linux，怎么办？”
 
-### 第二步 / Step 2：在终端运行一键命令
+下面有人回复：“买台云服务器啊，几十块钱一个月。”
 
-在 Codespaces 底部的**终端**中，复制粘贴以下命令并回车：
+又有人回：“太贵了，学生党伤不起。”
 
-In the **terminal** at the bottom of Codespaces, copy and paste the following command and press Enter:
+然后就没下文了。
+
+那个提问的人，可能到现在都还没摸过真正的 Linux 终端。
+
+我当时就在想：有没有一种办法，让任何人都能在几分钟内，不花钱，就能拥有一个能用的 Linux 桌面？
+
+答案是：有。
+
+它叫 GitHub Codespaces——GitHub 提供给每个账号的免费云端开发环境，每月有一定的免费额度，对个人学习来说完全够用。
+
+但问题是，Codespaces 默认给的是一个黑乎乎的终端，对新手极不友好。
+
+于是，Chick 诞生了。
+
+1.2 一句话解释
+
+Chick 是一个 Bash 脚本，它能在 GitHub Codespaces 里，一键帮你装好一整套图形化桌面环境。
+
+你只需要：
+
+· 一个 GitHub 账号（免费注册）
+· 一个浏览器（手机电脑都行）
+· 复制粘贴一次代码
+
+然后等几分钟，你就会看到一个完整的、可以在浏览器里操作的云端桌面——有任务栏、有开始菜单、有文件管理器、有浏览器，跟真正的电脑几乎没区别。
+
+1.3 它能给你什么
+
+你能得到的 具体说明
+🖥️ 一个云端桌面 在浏览器里就能操作，手机平板电脑都行
+🐧 三种 Linux 桌面 XFCE（轻量）、KDE（华丽）、LXQt（极简）
+🧩 软件超市 Chrome、Firefox、VS Code、Python、Node.js 一键装
+🪟 Windows 容器 在 Linux 里再跑一个 Windows，从 95 到 11 都行
+📦 Docker 环境 学容器、跑服务、做实验，一站式
+📊 系统监控 btop、nload、iftop，看 CPU、内存、网速
+🌐 中文支持 一键设置简体中文、中文输入法
+🔄 自维护 脚本能自己安装自己，注册成全局命令
+
+1.4 它不能给你什么
+
+我不想把它吹得太神。诚实地说：
+
+· ❌ 它不能让你白嫖无限算力。Codespaces 有免费额度，用完就没了，请珍惜。
+· ❌ 它不能跑大型游戏。没有 GPU，别想着打 3A。
+· ❌ 它不能替代真正的云服务器。它是学习工具，不是生产环境。
+· ❌ 它不保证 100% 成功。外部源、网络、GitHub 政策都会影响，我会尽量修，但无法承诺完美。
+
+如果你能接受这些，那我们继续。
+
+---
+
+第二章 · 为什么要做这个项目
+
+2.1 起因
+
+很多人第一次接触 Linux，是倒在“安装”这一步的。
+
+· 装双系统？怕把 Windows 搞坏。
+· 装虚拟机？电脑配置不够。
+· 买云服务器？学生党钱包不允许。
+· 用 WSL？Windows 家庭版没有 Hyper-V。
+
+学习 Linux 的门槛，从来不在 Linux 本身，而在“怎么开始”。
+
+Chick 想解决的，就是这个“开始”。
+
+2.2 三个初衷
+
+初衷一：让门槛降到零
+
+你不需要懂命令行，不需要会 Linux，不需要买任何东西。
+
+只要会复制粘贴，就能跑起来。
+
+初衷二：让过程可见
+
+我不想做一个“黑盒脚本”。所以 Chick 有：
+
+· 清晰的彩色提示
+· 分步骤的菜单
+· 状态文件记录（装了没装、装的哪个桌面）
+· 失败时告诉你怎么办
+
+你能看到它在做什么，而不是干等。
+
+初衷三：让维护变简单
+
+很多脚本装完就完事了，用户不知道怎么维护。
+
+Chick 不一样，它把“维护”也放进了菜单：
+
+· 想换桌面？菜单里选。
+· 想装软件？菜单里选。
+· 环境坏了？告诉你重建命令。
+
+装完只是开始，会用才是目的。
+
+2.3 设计哲学
+
+```
+简单 > 花哨
+能用 > 完美
+诚实 > 吹牛
+```
+
+这三句话，贯穿了整个项目的代码。
+
+---
+
+第三章 · 项目功能全景
+
+这一章是全文最长的一章，也是最重要的一章。
+
+我会把 Chick 的每个功能模块都讲清楚：它是干什么的、怎么用、有什么坑。
+
+3.1 平台支持矩阵
+
+Chick 不是只能跑在 Codespaces 上。它检测了多种环境：
+
+平台 支持程度 说明
+🟢 Codespaces 主力支持 推荐，最稳定
+🟢 Linux（Debian/Ubuntu） 主力支持 本地或服务器都能跑
+🟢 WSL 主力支持 Windows 里的 Linux 子系统
+🟡 macOS 实验性 只做了基础适配
+🟡 Termux 实验性 Android 上的终端，成功率不保证
+
+脚本开头会自动检测你在哪个平台，然后显示对应的菜单。
+
+怎么检测的？
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/xiaojixingdong/chick-install/main/chick.sh)
+detect_os() {
+    if [ -n "${TERMUX_VERSION:-}" ]; then
+        echo "termux"
+    elif [ "$(uname -s)" = "Darwin" ]; then
+        echo "macos"
+    elif [ -n "${CODESPACES:-}" ]; then
+        echo "codespaces"
+    elif grep -qi microsoft /proc/version; then
+        echo "wsl"
+    else
+        echo "linux"
+    fi
+}
+```
+
+这段代码的意思是：先看是不是 Termux，再看是不是 macOS，再看是不是 Codespaces，再看是不是 WSL，都不是就是普通 Linux。
+
+3.2 桌面环境分支
+
+这是 Chick 的核心功能。你可以选三种桌面：
+
+🍃 XFCE —— 轻量推荐
+
+· 下载体积：约 734 MB
+· 适合人群：新手、手机用户、网络慢的人
+· 特点：启动快、占用小、功能够用
+· 启动命令：startxfce4
+
+这是我推荐给 90% 用户的选择。
+
+💎 KDE Plasma —— 华丽
+
+· 下载体积：约 1.5 GB
+· 适合人群：追求美观、电脑配置好的人
+· 特点：界面精美、动画流畅、功能强大
+· 启动命令：startplasma-x11
+
+注意：KDE 在新版里启动命令变了，老版本叫 startkde，Chick 会自动尝试两个。
+
+🪶 LXQt —— 极简
+
+· 下载体积：约 500 MB
+· 适合人群：想要极致轻量的人
+· 特点：比 XFCE 还轻，界面朴素
+· 启动命令：startlxqt
+
+三个桌面的对比表：
+
+项目 XFCE KDE LXQt
+体积 734 MB 1.5 GB 500 MB
+内存占用 中 高 低
+美观度 中 高 低
+稳定性 高 中 中
+推荐度 ⭐⭐⭐⭐⭐ ⭐⭐⭐ ⭐⭐⭐
+
+3.3 软件超市
+
+装完桌面，你还需要软件。Chick 内置了一个“软件超市”，输入数字就能装。
+
+当前支持的软件：
+
+编号 软件 说明
+1 Google Chrome 官方 deb 包，稳定
+2 Firefox apt 安装
+3 微信 deepin-wine 版
+4 QQ deepin-wine 版
+5 Android Studio 含 JDK，约 1 GB
+6 VS Code Server 网页版 VS Code
+7 Node.js LTS 版本
+8 Python 含 pip 和 venv
+9 中文输入法 Fcitx5
+10 btop 系统监控
+11 nload 网速监控
+12 iftop 流量监控
+
+用法：输入多个数字，用空格隔开，比如：
+
+```
+👉 请输入数字（例如 1 3 5），回车确认：1 6 8
+```
+
+这样会依次装 Chrome、VS Code Server、Python。
+
+注意：不同平台显示的软件列表不一样。macOS 上不会显示微信，Termux 上不会显示 Chrome。
+
+3.4 Windows 容器（高风险功能）
+
+这是 Chick 最“重”的功能——在 Linux 里再跑一个 Windows。
+
+它基于 Docker 和 QEMU，理论上支持：
+
+· Windows 11
+· Windows 10
+· Windows 8.1
+· Windows 7
+· Windows Vista
+· Windows XP
+· Windows 2000
+· Windows ME
+· Windows 98
+· Windows 95
+
+但它有三个硬性要求：
+
+1. KVM 硬件加速。没有 /dev/kvm 的话，只能用纯软件模拟，性能差到无法使用。
+2. 至少 20 GB 磁盘空间。我加了检查，不够会直接拒绝。
+3. 足够的内存。脚本默认分配 4 GB，免费额度可能不够。
+
+操作流程：
+
+1. 主菜单选 5
+2. 输入 YES 确认风险
+3. 选择 Windows 版本
+4. 等待镜像拉取（几分钟到十几分钟）
+5. 打开 8006 端口访问
+
+⚠️ 强烈建议：如果你的 Codespaces 没有 KVM，不要尝试。浪费时间，还占额度。
+
+3.5 容器工具
+
+Chick 可以一键装 Docker：
+
+· 自动安装 docker.io 和 docker-compose
+· 自动尝试启动 Docker 守护进程
+· 启动失败会给你手动命令
+
+为什么 Docker 启动这么麻烦？
+
+因为 Codespaces 的环境比较特殊，默认没有 systemd，service docker start 不一定有效。Chick 做了兜底：
+
+```bash
+( sudo service docker start || sudo dockerd >/tmp/dockerd.log 2>&1 ) &
+```
+
+先用 service 启动，失败就用 dockerd 直接跑。然后轮询检查是否就绪。
+
+注意：Podman 在 Codespaces 里大概率装不上，所以我没放进主菜单。
+
+3.6 系统监控
+
+三个小工具，看系统状态：
+
+· btop：图形化系统监控，CPU、内存、网络、进程一目了然
+· nload：实时网速，上下行分开显示
+· iftop：连接级别的流量分析
+
+菜单里选 7 就能用。
+
+3.7 语言与区域设置
+
+一键把系统设成简体中文：
+
+· 生成 zh_CN.UTF-8 语言包
+· 设置默认语言
+· 设置时区为 Asia/Shanghai
+
+注意：设置完需要重新登录或重启 VNC 才生效。
+
+3.8 自安装机制
+
+这个功能很多人可能没注意到，但很实用。
+
+第一次运行脚本时，它会自动把自己复制到 ~/.chick/chick.sh，然后注册成全局命令 chick。
+
+以后你只要在终端输入：
+
+```bash
+chick
+```
+
+就能召唤主菜单，不用再找脚本文件在哪。
+
+它怎么判断是不是已经装过？
+
+用 readlink -f 解析真实路径，如果当前运行的就是全局脚本本身，就跳过安装。
+
+这是为了避免“自己复制自己”的死循环。
+
+3.9 状态管理
+
+Chick 用一个小文件记录你的选择：
+
+```
+~/.chick/state
+```
+
+内容长这样：
+
+```
+desktop=true
+de=xfce
+```
+
+· desktop=true 表示桌面已安装
+· de=xfce 表示当前用的是 XFCE
+
+主菜单会根据这个文件，显示不同的选项：
+
+· 没装过：显示“安装桌面环境”
+· 装过了：显示“启动桌面 / 停止桌面 / 更换桌面”
+
+为什么用原子写入？
+
+因为如果写到一半断电或 Ctrl+C，文件可能损坏。所以我用了临时文件 + mv 的方式：
+
+```bash
+write_state() {
+    local tmp="$STATE_FILE.tmp.$$"
+    { echo "desktop=$1"; echo "de=$2"; } > "$tmp"
+    mv -f "$tmp" "$STATE_FILE"
+}
+```
+
+mv 是原子操作，要么成功要么失败，不会留下半个文件。
+
+---
+
+第四章 · 怎么用（手把手教程）
+
+好，前面讲了那么多，现在开始动手。
+
+跟着做，不要跳步骤。
+
+4.1 准备工作
+
+你需要：
+
+· ✅ 一台能上网的设备（手机、平板、电脑都行）
+· ✅ 一个浏览器（Chrome、Edge、Safari 都行）
+· ✅ 一个 GitHub 账号（没有就注册）
+· ✅ 耐心（第一次装可能要十几分钟）
+
+4.2 注册 GitHub 账号
+
+已有账号的跳过这步。
+
+1. 打开 github.com
+2. 点右上角 Sign up
+3. 填邮箱、密码、用户名
+4. 完成人机验证
+5. 去邮箱点验证链接
+
+用户名建议：用英文+数字，别用中文，别用敏感词。比如 xiaoming2024 就挺好。
+
+4.3 新建仓库
+
+登录后：
+
+1. 点右上角 + 号
+2. 选 New repository
+3. Repository name：随便起，比如 mydesktop
+4. Description：可填可不填
+5. Public / Private：都行，建议 Private
+6. 勾选 Add a README file
+7. 点 Create repository
+
+为什么要建仓库？
+
+因为 Codespaces 是依附于仓库存在的。没有仓库，就没有 Codespaces。
+
+4.4 启动 Codespaces
+
+进入刚建好的仓库：
+
+1. 点绿色的 Code 按钮
+2. 切换到 Codespaces 标签
+3. 点 Create codespace on main
+
+然后等。
+
+等多久？
+
+· 快的话 30 秒
+· 慢的话 2-3 分钟
+
+取决于网络和 GitHub 当时的负载。
+
+你会看到什么？
+
+浏览器里出现一个类似 VS Code 的界面，下面有一个终端。
+
+4.5 运行脚本
+
+终端出来后，把 chick.sh 的内容全部复制，粘贴进终端，回车。
+
+注意：
+
+· 不要只复制一部分
+· 粘贴后如果没反应，按一下回车
+
+脚本开始运行后，你会看到彩色的提示信息。它会：
+
+1. 检测系统类型
+2. 安装必要依赖
+3. 把自己安装到 ~/.chick
+4. 显示主菜单
+
+这时候输入 1，选择“安装桌面环境”。
+
+然后选择桌面类型：
+
+· 输入 1 → XFCE
+· 输入 2 → KDE
+· 输入 3 → LXQt
+
+新手建议选 1。
+
+然后就是等。安装过程可能 5-15 分钟，取决于网络。
+
+4.6 打开桌面
+
+安装完成后：
+
+1. 回到主菜单
+2. 输入 1，选“启动桌面”
+3. 等几秒，会看到提示说桌面已启动
+4. 右下角会弹出端口提示
+5. 找到 6080 端口
+6. 把可见性改成 Public
+7. 点旁边的 地球图标
+
+然后你就看到一个完整的桌面了。
+
+4.7 第一次使用建议
+
+进去之后，建议先做这几件事：
+
+1. 打开终端，sudo apt update 一下
+2. 装个浏览器，方便查资料
+3. 改一下桌面壁纸，让它看起来像自己的
+4. 试试文件管理器，熟悉一下 Linux 目录结构
+
+别急着装一堆软件，先熟悉环境。
+
+---
+
+第五章 · 进阶使用
+
+5.1 更换桌面
+
+用腻了 XFCE，想试试 KDE？
+
+1. 主菜单选 3
+2. 重新选择桌面类型
+3. 等安装完成
+4. 重启桌面
+
+注意：换桌面不会卸载旧的，磁盘会占用更多。介意的话可以手动 apt remove。
+
+5.2 安装更多软件
+
+除了内置软件超市，你也可以直接用 apt：
+
+```bash
+sudo apt install 软件名
+```
+
+常用软件推荐：
+
+用途 软件
+浏览器 firefox / chromium
+编辑器 gedit / kate / code
+终端 terminator / tilix
+截图 flameshot
+压缩 p7zip-full
+下载 aria2
+
+5.3 安装 Windows
+
+前面讲过了，这里再强调一次：
+
+· 必须有 KVM
+· 至少 20 GB 空间
+· 准备好等很久
+
+如果你只是想体验 Windows，建议用官方虚拟机，别折腾 Codespaces。
+
+5.4 Docker 使用
+
+装好 Docker 后，你可以：
+
+```bash
+# 拉一个镜像
+sudo docker pull nginx
+
+# 跑一个容器
+sudo docker run -d -p 8080:80 nginx
+
+# 看运行中的容器
+sudo docker ps
+```
+
+然后把 8080 端口公开，就能访问了。
+
+5.5 维护与重建
+
+什么时候需要重建？
+
+· 环境坏了，命令都找不到
+· 装了什么把系统搞崩了
+· 想恢复出厂设置
+
+怎么重建？
+
+```bash
+gh codespace rebuild
+```
+
+或者在 GitHub 网页上，找到你的 Codespace，点 Rebuild。
+
+重建会丢数据吗？
+
+会。/workspaces 以外的内容可能丢失。重要文件记得提前备份。
+
+---
+
+第六章 · 常见问题 FAQ
+
+Q1：脚本运行报错怎么办？
+
+A：先看错误信息，通常是网络问题。重新运行一次。
+
+Q2：VNC 启动失败怎么办？
+
+A：手动清理后重试：
+
+```bash
+rm -rf /tmp/.X1-lock /tmp/.X11-unix/X1 ~/.vnc/*.pid
+```
+
+Q3：6080 端口打开是空白？
+
+A：等几秒刷新。还不行就检查 noVNC 是否启动。
+
+Q4：桌面很卡怎么办？
+
+A：换 XFCE 或 LXQt，别用 KDE。
+
+Q5：免费额度用完了怎么办？
+
+A：等下个月，或者用另一个账号。不建议滥用。
+
+Q6：能装中文输入法吗？
+
+A：能，软件超市选 9。装完还要配置环境变量。
+
+Q7：能装微信吗？
+
+A：能，但 deepin-wine 源不稳定，不一定成功。
+
+Q8：能装 Android Studio 吗？
+
+A：能，但很占空间，且需要 JDK。
+
+Q9：能跑 Windows 游戏吗？
+
+A：不能，别想了。
+
+Q10：能持久保存文件吗？
+
+A：/workspaces 目录会保留，其他目录重建后可能丢。
+
+Q11：怎么停止 Codespace？
+
+A：GitHub → Codespaces → 找到环境 → Stop。
+
+Q12：怎么删除 Codespace？
+
+A：同上，选 Delete。
+
+Q13：会扣钱吗？
+
+A：个人账号有免费额度，用完会停。不会自动扣钱，除非你绑了卡。
+
+Q14：支持 ARM 吗？
+
+A：部分支持。Chrome 和 Android Studio 只支持 x86_64。
+
+Q15：能多人共用一个环境吗？
+
+A：不能，Codespaces 是私人的。
+
+---
+
+第七章 · 技术细节
+
+这一章给想深入了解的人，新手可以跳过。
+
+7.1 脚本结构
+
+```
+chick.sh
+├── 颜色定义
+├── 配置变量
+├── 系统检测
+├── 工具函数（safe_read、is_uint、realpath_portable）
+├── 状态管理（read/write state）
+├── 自安装（install_self）
+├── 依赖检查（check_dependencies）
+├── Banner
+├── 语言设置
+├── 桌面选择与安装
+├── VNC 启动/停止
+├── 软件超市
+├── Docker
+├── Windows 容器
+├── 系统监控
+└── 主菜单
+```
+
+7.2 状态文件
+
+```
+~/.chick/state
+```
+
+只有两行：
+
+```
+desktop=true
+de=xfce
+```
+
+简单但够用。
+
+7.3 VNC 与 noVNC 原理
+
+· VNC：远程桌面协议，把图形界面通过网络传出去
+· TigerVNC：VNC 服务端实现
+· noVNC：把 VNC 转成 WebSocket，让浏览器能直接访问
+
+流程：
+
+```
+桌面环境 → TigerVNC(:1) → noVNC(6080) → 浏览器
+```
+
+7.4 安全提示
+
+· 脚本会执行 sudo 命令，请确认你信任它
+· 它从网络下载东西，请注意来源
+· 不要把公开的 Codespace 端口暴露敏感数据
+· 用完记得停掉环境
+
+---
+
+第八章 · 未来路线图
+
+✅ 已完成
+
+☑ 多平台检测
+☑ 三种桌面环境
+☑ VNC + noVNC
+☑ 软件超市
+☑ Docker 支持
+☑ Windows 容器
+☑ 系统监控
+☑ 自安装
+☑ 状态管理
+☑ 中文支持
+
+🚧 进行中
+
+☐ 更稳定的 Termux 支持
+☐ macOS 原生适配
+☐ 更多软件选项
+☐ 一键备份/恢复
+
+💡 计划中
+
+☐ Web 管理面板
+☐ 多语言支持（英文、日文）
+☐ 插件系统
+☐ 更多桌面环境（MATE、Cinnamon）
+
+---
+
+第九章 · 加入我们
+
+9.1 为什么需要你
+
+说实话，这个项目目前基本是我一个人在维护。
+
+代码不算优雅，功能不算完善，文档也还在补。
+
+但它已经在帮一些人解决问题了。
+
+每次看到有人说“终于跑起来了”，我就觉得值。
+
+但一个人走不远。
+
+如果你愿意，我希望你能加入。
+
+9.2 你能做什么
+
+你不需要是程序员。真的。
+
+你可以：
+
+· 🐛 报 Bug：遇到了问题，告诉我
+· 💡 提建议：想要什么功能，说出来
+· 📝 改文档：发现错别字、说不清楚的地方，改
+· 🌍 翻译：把它翻译成英文、日文、其他语言
+· 🧪 测试：在不同平台跑，反馈结果
+· ⭐ 点 Star：让更多人看到
+· 📣 分享：发给需要的人
+
+如果你会写代码，还可以：
+
+· 提交 Pull Request
+· 优化现有逻辑
+· 添加新功能
+· 重构代码
+
+9.3 新手也能贡献
+
+很多人以为“贡献开源”是高手的事。
+
+不是。
+
+一个错别字的修正，也是贡献。
+
+一个“这个功能不好用”的反馈，也是贡献。
+
+一次转发，也是贡献。
+
+9.4 贡献流程
+
+1. Fork 项目：点右上角 Fork
+2. 克隆到本地：git clone 你的仓库地址
+3. 新建分支：git checkout -b fix-xxx
+4. 修改代码
+5. 提交：git commit -m "修复了xxx"
+6. 推送：git push origin fix-xxx
+7. 提 PR：在 GitHub 上点 New Pull Request
+
+不会用 Git？
+
+也没关系。直接开 Issue 描述问题，我来看。
+
+9.5 联系我
+
+邮箱：xiaojixingdong@gmail.com
+
+什么时候可以发邮件？
+
+· 你有好的想法
+· 你想长期参与维护
+· 你发现了严重的安全问题
+· 你想合作
+
+什么时候不用发邮件？
+
+· 普通 Bug → 开 Issue
+· 功能建议 → 开 Issue
+· 使用问题 → 开 Discussion
+
+为什么留邮箱？
+
+因为我想知道，是谁在用这个项目，他们需要什么。
+
+如果你用了 Chick，欢迎写封邮件告诉我：
+
+· 你用它做了什么
+· 遇到了什么问题
+· 希望它变成什么样
+
+每一封邮件我都会看。 虽然不一定马上回，但一定会看。
+
+---
+
+写在最后
+
+写这个脚本的时候，我没想到会有人真的用。
+
+它一开始只是我自己的一个小工具，后来慢慢长成了现在这样。
+
+代码里有不少“土办法”，文档也还在补，功能也谈不上完美。
+
+但它是我认真做的。
+
+如果你用它解决了问题，我很开心。
+
+如果你用它学到了东西，我更开心。
+
+如果你愿意一起把它做得更好，那是最好的。
+
+技术不应该有门槛。
+
+每个人都应该有折腾的权利。
+
+希望 Chick 能帮你迈出第一步。
+
+---
+
+```
+   🐤  Chick 项目
+   让每个人都能拥有自己的云端桌面
+   
+   开发者：小鸡行动
+   邮箱：xiaojixingdong@gmail.com
+   
+   感谢每一个看到这里的人
+```
+
+---
+
+本文档最后更新于 2026 年
+如果你读到了这里，说明你真的很有耐心。谢谢你。
