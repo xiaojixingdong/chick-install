@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-#  🐤 Chick 自动安装脚本 -- v2.1 (Fixed)
+#  🐤 Chick 自动安装脚本 -- v2.2
 #  开发者：小鸡行动 (xiaojixingdong)
 #  联系邮箱：xiaojixingdong@gmail.com
 #  适用平台：Codespaces / Linux / WSL  —— 主力支持
@@ -872,6 +872,25 @@ main_menu() {
 # ============================================================
 #  启动流程
 # ============================================================
+# ---------- 命令行参数 ----------
+case "${1:-}" in
+    -h|--help)
+        cat <<'CHICK_HELP'
+🐤 Chick 云端桌面安装脚本 v2.2
+
+用法：
+  bash chick.sh              启动交互式菜单
+  bash chick.sh --help       显示帮助
+  bash chick.sh --version    显示版本
+
+一行安装（推荐）：
+  bash <(curl -fsSL https://raw.githubusercontent.com/xiaojixingdong/chick-install/main/chick.sh)
+CHICK_HELP
+        exit 0 ;;
+    -v|--version)
+        echo "chick v2.2"; exit 0 ;;
+esac
+
 check_dependencies
 install_self || true
 main_menu
