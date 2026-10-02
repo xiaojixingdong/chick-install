@@ -87,6 +87,10 @@ chick-install/
 └── chick.sh    # 全部逻辑，单文件
 ```
 
+## 交流与反馈
+
+遇到问题、想交流折腾心得？欢迎来 **Chick Zone** 社区：https://chickchat.cc.cd
+
 ## 联系
 
 - 开发者：小鸡行动
